@@ -17,9 +17,11 @@ AWS_ACCESS_KEY_ID = st.secrets['AWS_ACCESS_KEY_ID']
 AWS_SECRET_ACCESS_KEY = st.secrets['AWS_SECRET_ACCESS_KEY']
 
 s3_bucket = boto3.resource('s3',
+                           region_name=AWS_REGION,
                            aws_access_key_id=AWS_ACCESS_KEY_ID,
                            aws_secret_access_key=AWS_SECRET_ACCESS_KEY).Bucket(AWS_S3_BUCKET_NAME)
 ddb_table = boto3.resource('dynamodb',
+                           region_name=AWS_REGION,
                            aws_access_key_id=AWS_ACCESS_KEY_ID,
                            aws_secret_access_key=AWS_SECRET_ACCESS_KEY).Table(AWS_DYNAMODB_TABLE_NAME)
 

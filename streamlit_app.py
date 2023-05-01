@@ -59,6 +59,8 @@ def submit_data():
     print('ddb record written')
     print(data_dict)
 
+    st.balloons()
+
     next_prompt()
 
 
@@ -106,8 +108,11 @@ KEY_FEEDBACK_QUALITY = 'feedback_quality'
 KEY_FEEDBACK_FIDELITY = 'feedback_fidelity'
 KEY_FEEDBACK_DISTORTION = 'feedback_distortion'
 KEY_FEEDBACK_BIAS = 'feedback_bias'
+KEY_FEEDBACK_NOTES = 'feedback_notes'
 
-STATE_KEYS = [KEY_ID, KEY_PROMPT, KEY_CLUE, KEY_IMAGE, KEY_EMBEDDING, KEY_TIME, KEY_HUMAN_TIME, KEY_UUID, KEY_FEEDBACK_QUALITY, KEY_FEEDBACK_FIDELITY, KEY_FEEDBACK_DISTORTION, KEY_FEEDBACK_BIAS]
+STATE_KEYS = [KEY_ID, KEY_PROMPT, KEY_CLUE, KEY_IMAGE, KEY_EMBEDDING, KEY_TIME, KEY_HUMAN_TIME, KEY_UUID,
+              KEY_FEEDBACK_QUALITY, KEY_FEEDBACK_FIDELITY, KEY_FEEDBACK_DISTORTION, KEY_FEEDBACK_BIAS,
+              KEY_FEEDBACK_NOTES]
 
 state = st.session_state
 
@@ -122,10 +127,25 @@ def next_prompt():
     state[KEY_CLUE] = generate_clues()
 
 
+def reset_results():
+    state[KEY_IMAGE] = EMPTY
+    state[KEY_EMBEDDING] = EMPTY
+    state[KEY_TIME] = EMPTY
+
+
 st.header("Part 1: Simulating a Generative AI Workflow")
 st.subheader("Let's generate some data!")
 
-st.text_input('First, enter your name or an email address.', key=KEY_ID)
+st.markdown("The purpose of Part I is to generate a collection of data from a generative AI task.  "
+            "Imagine that you’re responsible for generating thumbnail images for a newspaper or magazine"
+            " based on some features you’ve been given.\n"
+            "1. You’ll be presented with a set of keywords.\n"
+            "2. Use your imagination to turn them into a prompt for a generative image model."
+            "3. Look at the image generated and answer a few questions about how well the model performed.\n"
+            "4. Click “Submit” and we’ll store all this info for subsequent analysis.\n")
+
+st.text_input("First, enter your name or an email address. (This is so you can identify data you generated – we won't "
+              "add you to any mailing lists without your permission.)", key=KEY_ID)
 
 if state[KEY_ID] == EMPTY:
     st.stop()
@@ -133,33 +153,29 @@ if state[KEY_ID] == EMPTY:
 st.write(f"Fabulous, {state[KEY_ID]}")
 
 st.markdown('---')
-st.write("Please take the following randomly selected elements and incorporate them into an image generation prompt.  Feel free to embelish ")
+st.subheader("Story Features")
+st.write("Please use the following randomly selected features as the seed for a thumbnail image idea.")
 
 if state[KEY_CLUE] == EMPTY:
     state[KEY_CLUE] = generate_clues()
 
+c1, c2 = st.columns(2)
 
-# num_clues = len(state[KEY_CLUE])
-#
-# clue_cols = st.columns(num_clues)
-# for c, (category, item) in zip(clue_cols, state[KEY_CLUE].items()):
-#     with c:
-#         st.metric(label=category, value=item)
+with c1:
+    for category, item in state[KEY_CLUE].items():
+        st.metric(label=category, value=item)
+with c2:
+    st.title('')
+    st.title('')
+    st.title('')
+    st.title('')
+    if state[KEY_PROMPT] == EMPTY:
+        st.button('New clues, please.', on_click=next_prompt)
 
-# clue_cols = st.columns(num_clues)
-
-for category, item in state[KEY_CLUE].items():
-    st.metric(label=category, value=item)
-
-if state[KEY_PROMPT] == EMPTY:
-    st.button('New clues, please.', on_click=next_prompt)
 st.markdown('---')
-
-def reset_results():
-    state[KEY_IMAGE] = EMPTY
-    state[KEY_EMBEDDING] = EMPTY
-    state[KEY_TIME] = EMPTY
-
+st.subheader("The prompt")
+st.write('Turn your idea into a prompt for an image generation model.  Feel free to embellish!  e.g. "Engineer" + '
+         '"Old Shoe" might become "A portrait of an engineer comparing his futuristic boot invention to an old shoe."')
 
 if state[KEY_ID] != EMPTY:
     st.text_input('Enter your prompt:', key=KEY_PROMPT, on_change=reset_results)
@@ -187,8 +203,10 @@ with col2:
     st.radio('Did the model include any visual distortions? (e.g. crazy-fingers)', key=KEY_FEEDBACK_DISTORTION,
                         options=['No', 'Yes'])
 
-    st.radio('Did the model make any assumptions that could indicate bias? (e.g. race, gender, age)', key=KEY_FEEDBACK_BIAS,
-                    options=['No', 'Yes'])
+    st.radio('Did the model make any assumptions that could indicate bias? (e.g. race, gender, age)',
+             key=KEY_FEEDBACK_BIAS, options=['No', 'Yes'])
+
+    st.text_input('[Optional] Additional Notes', key=KEY_FEEDBACK_NOTES)
 
     col3, col4, col5 = st.columns(3)
 

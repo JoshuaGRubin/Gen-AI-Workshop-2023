@@ -142,7 +142,7 @@ st.markdown("The purpose of Part I is to generate a collection of data from a ge
             "Imagine that you’re responsible for generating thumbnail images for a newspaper or magazine"
             " based on some features you’ve been given.\n"
             "1. You’ll be presented with a set of keywords.\n"
-            "2. Use your imagination to turn them into a prompt for a generative image model."
+            "2. Use your imagination to turn them into a prompt for a generative image model.\n"
             "3. Look at the image generated and answer a few questions about how well the model performed.\n"
             "4. Click “Submit” and we’ll store all this info for subsequent analysis.\n")
 

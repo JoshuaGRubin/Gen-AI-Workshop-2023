@@ -52,6 +52,8 @@ def submit_data():
 
     data_dict = {k: v for k, v in state.items() if k in STATE_KEYS}
 
+    data_dict[KEY_USER_ID] = data_dict[KEY_USER_ID].lower()
+
     s3_bucket.upload_fileobj(io.BytesIO(data_dict.pop(KEY_IMAGE)), data_dict[KEY_UUID] + '.png', )
     print('image written to s3')
 

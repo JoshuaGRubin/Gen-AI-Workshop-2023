@@ -95,7 +95,7 @@ def generate_clues():
 
 EMPTY = ''
 
-KEY_ID = 'prompt_id'
+KEY_ID = 'user'
 KEY_PROMPT = 'prompt'
 KEY_CLUE = 'clue'
 KEY_IMAGE = 'image'
@@ -103,7 +103,7 @@ KEY_EMBEDDING = 'embedding'
 KEY_TIME = 'time'
 KEY_HUMAN_TIME = 'time'
 
-KEY_UUID = 'uuid'
+KEY_UUID = 'prompt_id'
 KEY_FEEDBACK_QUALITY = 'feedback_quality'
 KEY_FEEDBACK_FIDELITY = 'feedback_fidelity'
 KEY_FEEDBACK_DISTORTION = 'feedback_distortion'

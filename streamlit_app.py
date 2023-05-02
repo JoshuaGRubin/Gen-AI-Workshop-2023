@@ -145,12 +145,12 @@ st.markdown("The purpose of Part I is to generate a collection of data from a ge
             "4. Click “Submit” and we’ll store all this info for subsequent analysis.\n")
 
 st.text_input("First, enter your name or an email address. (This is so you can identify data you generated – we won't "
-              "add you to any mailing lists without your permission.)", key=KEY_ID)
+              "add you to any mailing lists without your permission.)", key=KEY_USER_ID)
 
-if state[KEY_ID] == EMPTY:
+if state[KEY_USER_ID] == EMPTY:
     st.stop()
 
-st.write(f"Fabulous, {state[KEY_ID]}")
+st.write(f"Fabulous, {state[KEY_USER_ID]}")
 
 st.markdown('---')
 st.subheader("Story Features")
@@ -177,7 +177,7 @@ st.subheader("The prompt")
 st.write('Turn your idea into a prompt for an image generation model.  Feel free to embellish!  e.g. "Engineer" + '
          '"Old Shoe" might become "A portrait of an engineer comparing his futuristic boot invention to an old shoe."')
 
-if state[KEY_ID] != EMPTY:
+if state[KEY_USER_ID] != EMPTY:
     st.text_input('Enter your prompt:', key=KEY_PROMPT, on_change=reset_results)
 
 if state[KEY_PROMPT] is EMPTY:

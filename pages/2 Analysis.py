@@ -15,6 +15,7 @@ AWS_ACCESS_KEY_ID = st.secrets['AWS_ACCESS_KEY_ID']
 AWS_SECRET_ACCESS_KEY = st.secrets['AWS_SECRET_ACCESS_KEY']
 
 ddb_table = boto3.resource("dynamodb",
+                           region_name=AWS_REGION,
                            aws_access_key_id=AWS_ACCESS_KEY_ID,
                            aws_secret_access_key=AWS_SECRET_ACCESS_KEY).Table(
     AWS_DYNAMODB_TABLE_NAME)
@@ -145,6 +146,6 @@ if len(selected_points):
     with c3:
         file_name = d.iloc[selected_points[0]['pointNumber']]['prompt_id'] + '.png'
         s3_bucket.download_file(file_name, './' + file_name)
-        st.image('./' + file_name)
+        st.image('./tmp/' + file_name)
     with c4:
         st.write(d.iloc[selected_points[0]['pointNumber']])

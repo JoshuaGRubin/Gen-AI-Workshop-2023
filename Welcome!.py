@@ -20,6 +20,7 @@ s3_bucket = boto3.resource('s3',
                            region_name=AWS_REGION,
                            aws_access_key_id=AWS_ACCESS_KEY_ID,
                            aws_secret_access_key=AWS_SECRET_ACCESS_KEY).Bucket(AWS_S3_BUCKET_NAME)
+
 ddb_table = boto3.resource('dynamodb',
                            region_name=AWS_REGION,
                            aws_access_key_id=AWS_ACCESS_KEY_ID,
@@ -45,7 +46,7 @@ def get_embedding(prompt='a gray cat jumping between pieces of furnatiure', mode
       model=model        
     )
 
-    return [Decimal(x) for x in response['data'][0]['embedding']]
+    return [Decimal(str(x)[:9]) for x in response['data'][0]['embedding']]
 
 
 def submit_data():

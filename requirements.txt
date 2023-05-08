@@ -5,3 +5,4 @@ streamlit-plotly-events
 matplotlib
 openai
 boto3
+umap-learn

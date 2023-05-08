@@ -146,6 +146,6 @@ if len(selected_points):
     with c3:
         file_name = d.iloc[selected_points[0]['pointNumber']]['prompt_id'] + '.png'
         s3_bucket.download_file(file_name, './' + file_name)
-        st.image('./tmp/' + file_name)
+        st.image('./' + file_name)
     with c4:
         st.write(d.iloc[selected_points[0]['pointNumber']])

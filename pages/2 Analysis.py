@@ -36,7 +36,7 @@ def get_data():
 
     embs = np.asarray(df['embedding'].to_list())
 
-    reducer = umap.UMAP(n_components=3)
+    reducer = umap.UMAP(n_components=3, n_neighbors=8)
 
     umap_embs = reducer.fit_transform(embs[:, :16])
 

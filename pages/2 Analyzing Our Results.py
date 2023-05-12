@@ -83,12 +83,13 @@ else:
 if session != 'All':
     d = d[d['session_id'] == session]
 
-st.write(len(d))
+st.write(f'{len(d)} records returned')
+
+if len(d) == 0:
+    st.stop()
 
 st.title('')
 
-
-# e = np.array(d['umap_embs_0'].to_list())
 
 cc = d['feedback_' + feedback].values
 

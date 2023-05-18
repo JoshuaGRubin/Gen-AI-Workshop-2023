@@ -73,7 +73,7 @@ def submit_data():
     next_prompt()
 
 
-politics_details = {'Who': ['the president', 'a mayer', 'a senator', 'a politician', 'protestors'],
+politics_details = {'Who': ['the president', 'a mayor', 'a senator', 'a politician', 'protestors'],
                     'Where': ['the White House', 'a restaurant', 'a podium', 'a park'],
                     'What': ['a scandal', 'an agreement', 'an election', 'a debate', 'a surprise', 'a celebration']}
 
@@ -97,7 +97,7 @@ travel_details = {'Where': ['a hotel', 'an airplane', 'city streets', 'a hiking 
 funny_details = {'Who': ['a cat', 'some kids', 'a family', 'some people in an office', 'a clown'],
                  'What': ['pizza', 'ice cream', 'doing homework', 'on a date', 'watching a movie', 'dancing',
                           'a laptop', 'in a treehouse'],
-                 'When': ['the stone age', 'the future', '1950s', 'during the pandemic']}
+                 'When': ['the stone age', 'the future', '1950s']}
 
 categories_details = {'politics': politics_details,
                       'business': business_details,

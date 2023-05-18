@@ -4,6 +4,7 @@ import plotly.graph_objects as go
 from streamlit_plotly_events import plotly_events
 import pandas as pd
 import numpy as np
+import os
 import umap
 import boto3
 
@@ -13,6 +14,8 @@ AWS_REGION = st.secrets['AWS_REGION']
 
 AWS_ACCESS_KEY_ID = st.secrets['AWS_ACCESS_KEY_ID']
 AWS_SECRET_ACCESS_KEY = st.secrets['AWS_SECRET_ACCESS_KEY']
+
+TEMP_IMAGE_PATH = './temp'
 
 ddb_table = boto3.resource("dynamodb",
                            region_name=AWS_REGION,
@@ -25,6 +28,7 @@ s3_bucket = boto3.resource('s3',
                            aws_access_key_id=AWS_ACCESS_KEY_ID,
                            aws_secret_access_key=AWS_SECRET_ACCESS_KEY).Bucket(AWS_S3_BUCKET_NAME)
 
+
 def transform(x):
     x['embedding'] = [float(xx) for xx in x['embedding']]
     return x
@@ -32,8 +36,19 @@ def transform(x):
 
 @st.cache_data(ttl=30)
 def get_db_data():
-    data = [transform(x) for x in ddb_table.scan()['Items']]
-    return pd.DataFrame(data)
+    response = ddb_table.scan()
+    data = [transform(x) for x in response['Items']]
+    while 'LastEvaluatedKey' in response:
+        response = ddb_table.scan(ExclusiveStartKey=response['LastEvaluatedKey'])
+        data = data + [transform(x) for x in response['Items']]
+
+    raw_df = pd.DataFrame(data)
+
+    raw_df.to_csv('gen_workshop_dataframe.csv', index=False)
+    with open('gen_workshop_dataframe.csv', 'rb') as f:
+        s3_bucket.upload_fileobj(f, 'gen_workshop_dataframe.csv')
+
+    return raw_df
 
 @st.cache_data
 def run_umap(the_df):
@@ -51,6 +66,9 @@ def run_umap(the_df):
 
 def get_data():
     raw_df = get_db_data()
+
+
+
     umap_df = run_umap(raw_df)
     df = raw_df.copy()
     return pd.concat([df, umap_df], axis=1)
@@ -145,8 +163,15 @@ fig = px.scatter(
     y="UMAP_1",
     color=sort_col,
     # color_discrete_sequence=cols
-    color_discrete_sequence=['#e41a1c','#377eb8','#4daf4a','#984ea3','#ff7f00','#ffff33','#a65628','#f781bf','#999999'],
-)
+    color_discrete_sequence=['#e41a1c',
+                             '#377eb8',
+                             '#4daf4a',
+                             '#984ea3',
+                             '#ff7f00',
+                             '#ffff33',
+                             '#a65628',
+                             '#f781bf',
+                             '#999999'])
 
 # vals = sorted(d['feedback_' + feedback].unique(), reverse=True)
 # for i, val in enumerate(vals):
@@ -190,18 +215,28 @@ col_list = [None] * len(selected_points)
 c3, c4 = st.columns(2)
 if len(selected_points):
 
+    if not  os.path.exists(TEMP_IMAGE_PATH):
+        os.makedirs(TEMP_IMAGE_PATH)
+
     row_ids = [d[d['UMAP_0'] == p['x']].index.tolist()[0] for p in selected_points]
 
     for i, row_id in enumerate(row_ids):
 
         col_list[i] = st.columns(2)
 
+        row = d.loc[row_id]
+
         with col_list[i][0]:
-            file_name = d.loc[row_id]['prompt_id'] + '.png'
-            s3_bucket.download_file(file_name, './' + file_name)
-            st.image('./' + file_name)
+            file_name = row['prompt_id'] + '.png'
+            path = TEMP_IMAGE_PATH + '/' + file_name
+            s3_bucket.download_file(file_name, path)
+            st.image(path)
 
         with col_list[i][1]:
+            st.write(row['category'])
+            for k,v in row['features'].items():
+                st.write(f'{k}: {v}')
+            st.write(d.loc[row_id]['prompt'])
             st.write(d.loc[row_id])
 
         break

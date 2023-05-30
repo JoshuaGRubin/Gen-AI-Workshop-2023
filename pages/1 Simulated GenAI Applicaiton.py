@@ -8,7 +8,7 @@ import streamlit as st
 from uuid import uuid1
 from decimal import Decimal
 
-SESSION_ID = 'banana'
+SESSION_ID = st.secrets['SESSION_ID']
 TOT_PROMPTS_TO_DO = 15
 
 OPENAI_API_KEY = st.secrets['OPENAI_API_KEY']
@@ -18,6 +18,8 @@ AWS_REGION = st.secrets['AWS_REGION']
 
 AWS_ACCESS_KEY_ID = st.secrets['AWS_ACCESS_KEY_ID']
 AWS_SECRET_ACCESS_KEY = st.secrets['AWS_SECRET_ACCESS_KEY']
+
+CAT_DOG_PROB = 0.1
 
 s3_bucket = boto3.resource('s3',
                            region_name=AWS_REGION,
@@ -58,6 +60,10 @@ def submit_data():
 
     data_dict[KEY_USER_ID] = data_dict[KEY_USER_ID].lower()
 
+    # data_dict[KEY_PROMPT] =
+    #
+    # print()
+
     s3_bucket.upload_fileobj(io.BytesIO(data_dict.pop(KEY_IMAGE)), data_dict[KEY_UUID] + '.png', )
     # print('image written to s3')
 
@@ -77,11 +83,6 @@ politics_details = {'Who': ['the president', 'a mayor', 'a senator', 'a politici
                     'Where': ['the White House', 'a restaurant', 'a podium', 'a park'],
                     'What': ['a scandal', 'an agreement', 'an election', 'a debate', 'a surprise', 'a celebration']}
 
-business_details = {'Who': ['an executive', 'a mechanic', 'a family', 'workers'],
-                    'Where': ['Wall Street', 'a grocery store', 'a shipping container', 'a factory',
-                              'a corporate headquarters'],
-                    'What': ['an infographic', 'a protest', 'inflation', 'the banking sector', 'corn futures']}
-
 arts_details = {'Who': ['a painter', 'musicians', 'a photographer', 'a child'],
                 'Where': ['a gallery', 'a cafe', 'a museum', 'a natural scene'],
                 'What': ['a painting', 'a sculpture', 'a performance', 'a paintbrush', 'a sweater', 'a portrait']}
@@ -89,6 +90,11 @@ arts_details = {'Who': ['a painter', 'musicians', 'a photographer', 'a child'],
 sports_details = {'Game': ['golf', 'soccer', 'baseball', 'cricket', 'football', 'climbing', 'cycling'],
                   'What': ['victory', 'rivalry', 'history', 'weather', 'new record', 'injury'],
                   'Where': ['stadium', 'university', 'back yard', 'arena', 'national park']}
+
+business_details = {'Who': ['an executive', 'a mechanic', 'a family', 'workers'],
+                    'Where': ['Wall Street', 'a grocery store', 'a shipping container', 'a factory',
+                              'a corporate headquarters'],
+                    'What': ['an infographic', 'a protest', 'inflation', 'the banking sector', 'corn futures']}
 
 travel_details = {'Where': ['a hotel', 'an airplane', 'city streets', 'a hiking trail', 'a beach on an island'],
                   'What': ['a map', 'noodles', 'luxury', 'delight', 'delay', 'wildlife'],
@@ -100,9 +106,9 @@ funny_details = {'Who': ['a cat', 'some kids', 'a family', 'some people in an of
                  'When': ['the stone age', 'the future', '1950s']}
 
 categories_details = {'politics': politics_details,
-                      'business': business_details,
                       'arts': arts_details,
                       'sports': sports_details,
+                      'business': business_details,
                       'travel': travel_details,
                       'cartoon': funny_details}
 
@@ -122,14 +128,22 @@ categories_examples = {
 
 
 def generate_clues(prompt_number=0):
-    categories = list(categories_details)
-    category = random.choice(categories)
 
-    cat_cats = list(categories_details[category].keys())
-    random.shuffle(cat_cats)
+    r = random.random()
 
-    clue0 = random.choice(categories_details[category][cat_cats[0]])
-    clue1 = random.choice(categories_details[category][cat_cats[1]])
+    if r < CAT_DOG_PROB:
+        return 'travel', {'What': random.choice(['a dog', 'a cat']),
+                          'Where': random.choice(['a tree', 'a cafe', 'tall grass', 'a dusty road', 'in an airplane'])}
+
+    else:
+        categories = list(categories_details)
+        category = random.choice(categories)
+
+        cat_cats = list(categories_details[category].keys())
+        random.shuffle(cat_cats)
+
+        clue0 = random.choice(categories_details[category][cat_cats[0]])
+        clue1 = random.choice(categories_details[category][cat_cats[1]])
 
     return category, {cat_cats[0]: clue0, cat_cats[1]: clue1}
 
@@ -138,6 +152,7 @@ EMPTY = ''
 
 KEY_USER_ID = 'user'
 KEY_PROMPT = 'prompt'
+KEY_FINAL_PROMPT = 'final_prompt'
 KEY_IMAGE = 'image'
 KEY_EMBEDDING = 'embedding'
 KEY_TIME = 'time'
@@ -154,7 +169,7 @@ KEY_SESSION_ID = 'session_id'
 KEY_CATEGORY = 'category'
 KEY_FEATURES = 'features'
 
-STATE_KEYS = [KEY_USER_ID, KEY_PROMPT, KEY_IMAGE, KEY_EMBEDDING, KEY_TIME, KEY_HUMAN_TIME, KEY_UUID,
+STATE_KEYS = [KEY_USER_ID, KEY_PROMPT, KEY_FINAL_PROMPT, KEY_IMAGE, KEY_EMBEDDING, KEY_TIME, KEY_HUMAN_TIME, KEY_UUID,
               KEY_FEEDBACK_QUALITY, KEY_FEEDBACK_FIDELITY, KEY_FEEDBACK_DISTORTION, KEY_FEEDBACK_BIAS,
               KEY_FEEDBACK_NOTES, KEY_SESSION_ID, KEY_PROMPT_NUMBER, KEY_CATEGORY, KEY_FEATURES]
 
@@ -180,32 +195,25 @@ def reset_results():
     state[KEY_EMBEDDING] = EMPTY
     state[KEY_TIME] = EMPTY
 
+    if ' cat ' in state[KEY_PROMPT]:
+        state[KEY_FINAL_PROMPT] = state[KEY_PROMPT].lower().replace(' cat ', ' dog ')
+
+    if ' dog ' in state[KEY_PROMPT]:
+        state[KEY_FINAL_PROMPT] = state[KEY_PROMPT].lower().replace(' dog ', ' cat ')
+
+
 st.header("Part 1: Simulating a Generative AI Workflow")
 
-st.text(f'Session:  {state[KEY_SESSION_ID]}')
-
-
-
-# st.subheader("Let's generate some data!")
-
-# st.markdown("The purpose of Part I is to generate a collection of data from a generative AI task.  "
-#             "Imagine that you’re responsible for generating thumbnail images for a newspaper or magazine"
-#             " based on some features you’ve been given.\n"
-#             "1. You’ll be presented with a set of keywords.\n"
-#             "2. Use your imagination to turn them into a prompt for a generative image model.\n"
-#             "3. Look at the image generated and answer a few questions about how well the model performed.\n"
-#             "4. Click “Submit” and we’ll store all this info for subsequent analysis.\n")
-#
+# st.text(f'Session:  {state[KEY_SESSION_ID]}')
 
 text_input_container = st.empty()
-text_input_container.text_input("First, enter your name or an email address. (This is so you can identify data you generated – we won't "
-                                   "add you to any mailing lists without your permission.)", key=KEY_USER_ID)
+text_input_container.text_input("First, enter a name. This is just for fun so you can find your data later!", key=KEY_USER_ID)
 
 if state[KEY_USER_ID] == EMPTY:
     st.stop()
 
 text_input_container.empty()
-st.text(f"User:     {state[KEY_USER_ID]}")
+st.text(f"User:     {state[KEY_USER_ID].lower()}")
 
 st.text(f'Prompt #: {state[KEY_PROMPT_NUMBER]} of {TOT_PROMPTS_TO_DO}')
 st.progress(state[KEY_PROMPT_NUMBER]/TOT_PROMPTS_TO_DO)
@@ -217,11 +225,11 @@ st.subheader("Story Features")
 if state[KEY_CATEGORY] == EMPTY:
     state[KEY_CATEGORY], state[KEY_FEATURES] = generate_clues()
 
-st.markdown(f'Please write a prompt to generate a thumbnail image for the **{state[KEY_CATEGORY]}** section using the '
-            f'randomly selected clues below.\n\nHere are some examples for inspiration:')
+st.markdown(f'You work for a newspaper and your job is to write a prompt to generate a thumbnail image for a'
+            f'newspaper story using the for the randomly selected section and topics below.')
 
-ex = '\n\n'.join(['>'+example for example in categories_examples[state[KEY_CATEGORY]]])
-st.markdown(ex)
+# ex = '\n\n'.join(['>'+example for example in categories_examples[state[KEY_CATEGORY]]])
+# st.markdown(ex)
 
 st.header('')
 
@@ -243,8 +251,13 @@ if state[KEY_PROMPT] is EMPTY:
     st.stop()
 
 if state[KEY_IMAGE] == EMPTY:
-    state[KEY_IMAGE] = base64.b64decode(get_image(state['prompt']))
-    state[KEY_EMBEDDING] = get_embedding(state['prompt'])
+    try:
+        state[KEY_IMAGE] = base64.b64decode(get_image(state[KEY_FINAL_PROMPT]))
+        state[KEY_EMBEDDING] = get_embedding(state[KEY_FINAL_PROMPT])
+    except Exception as e:
+        st.error("The following error occurred generating image or embeddings:\n\n\"" + str(e) + '\"\n\nPlease rewrite prompt and try again')
+        st.stop()
+
     state[KEY_TIME] = time.time_ns()//10**9
     state[KEY_HUMAN_TIME] = time.strftime('%a, %d %b %Y %H:%M:%S UTC', time.gmtime(state[KEY_TIME]))
     state[KEY_UUID] = str(uuid1())
@@ -257,7 +270,7 @@ with col1:
 with col2:
     st.select_slider('How happy are you with the result? (5 is "totally")', key=KEY_FEEDBACK_QUALITY, options=[1, 2, 3, 4, 5])
 
-    st.radio('Was the model missing any aspects of your prompt?', key=KEY_FEEDBACK_FIDELITY, options=['No', 'Yes'])
+    st.radio('Fidelity – did the model capture everything you asked for?', key=KEY_FEEDBACK_FIDELITY, options=['No', 'Yes'])
 
     st.radio('Did the model include any visual distortions? (e.g. AI crazy-fingers)', key=KEY_FEEDBACK_DISTORTION,
                         options=['No', 'Yes'])
@@ -269,7 +282,7 @@ with col2:
 
     col3, col4, col5 = st.columns(3)
 
-    # with col3:
-    st.button("Reset :recycle:", on_click=next_prompt)
+    # # with col3:
+    # st.button("Reset :recycle:", on_click=next_prompt)
     # with col4:
     st.button('Submit :rocket:', on_click=submit_data)

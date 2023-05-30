@@ -1,6 +1,7 @@
 pandas
 numpy
 streamlit
+streamlit-extras
 streamlit-plotly-events
 matplotlib
 openai

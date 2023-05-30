@@ -7,6 +7,9 @@ import os
 import umap
 import boto3
 
+from streamlit_extras.app_logo import add_logo
+add_logo('fiddler-ai-logo.png', height=50)
+
 AWS_S3_BUCKET_NAME = st.secrets['AWS_S3_BUCKET_NAME']
 AWS_DYNAMODB_TABLE_NAME = st.secrets['AWS_DYNAMODB_TABLE_NAME']
 AWS_REGION = st.secrets['AWS_REGION']

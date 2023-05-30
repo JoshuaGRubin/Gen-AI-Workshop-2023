@@ -8,6 +8,10 @@ import streamlit as st
 from uuid import uuid1
 from decimal import Decimal
 
+from streamlit_extras.app_logo import add_logo
+add_logo('fiddler-ai-logo.png', height=50)
+
+
 SESSION_ID = st.secrets['SESSION_ID']
 TOT_PROMPTS_TO_DO = 12
 

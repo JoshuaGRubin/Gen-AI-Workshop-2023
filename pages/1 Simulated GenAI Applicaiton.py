@@ -9,7 +9,7 @@ from uuid import uuid1
 from decimal import Decimal
 
 SESSION_ID = st.secrets['SESSION_ID']
-TOT_PROMPTS_TO_DO = 15
+TOT_PROMPTS_TO_DO = 12
 
 OPENAI_API_KEY = st.secrets['OPENAI_API_KEY']
 AWS_S3_BUCKET_NAME = st.secrets['AWS_S3_BUCKET_NAME']
@@ -20,6 +20,7 @@ AWS_ACCESS_KEY_ID = st.secrets['AWS_ACCESS_KEY_ID']
 AWS_SECRET_ACCESS_KEY = st.secrets['AWS_SECRET_ACCESS_KEY']
 
 CAT_DOG_PROB = 0.1
+DAYS_IN_GROUP = 4
 
 s3_bucket = boto3.resource('s3',
                            region_name=AWS_REGION,
@@ -30,7 +31,6 @@ ddb_table = boto3.resource('dynamodb',
                            region_name=AWS_REGION,
                            aws_access_key_id=AWS_ACCESS_KEY_ID,
                            aws_secret_access_key=AWS_SECRET_ACCESS_KEY).Table(AWS_DYNAMODB_TABLE_NAME)
-
 
 def get_image(prompt='a gray cat jumping between pieces of furnatiure', size="256x256"):
     response = openai.Image.create(
@@ -44,7 +44,7 @@ def get_image(prompt='a gray cat jumping between pieces of furnatiure', size="25
     return response['data'][0]['b64_json']
 
 
-def get_embedding(prompt='a gray cat jumping between pieces of furnatiure', model='text-embedding-ada-002'):
+def get_embedding(prompt='a gray cat jumping between pieces of furniture', model='text-embedding-ada-002'):
     response = openai.Embedding.create(
       api_key=OPENAI_API_KEY,
       input=[prompt],
@@ -81,7 +81,7 @@ def submit_data():
 
 politics_details = {'Who': ['the president', 'a mayor', 'a senator', 'a politician', 'protestors'],
                     'Where': ['the White House', 'a restaurant', 'a podium', 'a park'],
-                    'What': ['a scandal', 'an agreement', 'an election', 'a debate', 'a surprise', 'a celebration']}
+                    'What': ['a scandal', 'an agreement', 'a debate', 'a surprise', 'a celebration']}
 
 arts_details = {'Who': ['a painter', 'musicians', 'a photographer', 'a child'],
                 'Where': ['a gallery', 'a cafe', 'a museum', 'a natural scene'],
@@ -105,12 +105,23 @@ funny_details = {'Who': ['a cat', 'some kids', 'a family', 'some people in an of
                           'a laptop', 'in a treehouse'],
                  'When': ['the stone age', 'the future', '1950s']}
 
-categories_details = {'politics': politics_details,
-                      'arts': arts_details,
-                      'sports': sports_details,
-                      'business': business_details,
-                      'travel': travel_details,
-                      'cartoon': funny_details}
+categories_details_1 = {'politics': politics_details,
+                        'arts': arts_details,
+                        'sports': sports_details,
+                        'business': business_details,
+                        'travel': travel_details,
+                        'cartoon': funny_details}
+
+
+politics_details_2 = {'Who': ['the president', 'the United Nations', 'NATO', 'The EU'],
+                      'What': ['an important election', 'a scandal', 'a natural disaster',
+                               'Artificial General Intelligence', 'an international conflict']}
+
+sports_details_2 = {'What': ['FIFA World Cup', 'the Super Bowl', 'the baseball World Series'],
+                    'Where': ['terrible weather', 'a game highlight']}
+
+categories_details_2 = {'politics': politics_details_2,
+                          'sports': sports_details_2}
 
 categories_examples = {
     'politics': ["A photo of the president embarrassed in front of reporters during the correspondents' dinner.",
@@ -135,15 +146,19 @@ def generate_clues(prompt_number=0):
         return 'travel', {'What': random.choice(['a dog', 'a cat']),
                           'Where': random.choice(['a tree', 'a cafe', 'tall grass', 'a dusty road', 'in an airplane'])}
 
+    if ((state[KEY_PROMPT_NUMBER] // DAYS_IN_GROUP) % 2) == 0:
+        categories_details = categories_details_1
     else:
-        categories = list(categories_details)
-        category = random.choice(categories)
+        categories_details = categories_details_2
 
-        cat_cats = list(categories_details[category].keys())
-        random.shuffle(cat_cats)
+    categories = list(categories_details)
+    category = random.choice(categories)
 
-        clue0 = random.choice(categories_details[category][cat_cats[0]])
-        clue1 = random.choice(categories_details[category][cat_cats[1]])
+    cat_cats = list(categories_details[category].keys())
+    random.shuffle(cat_cats)
+
+    clue0 = random.choice(categories_details[category][cat_cats[0]])
+    clue1 = random.choice(categories_details[category][cat_cats[1]])
 
     return category, {cat_cats[0]: clue0, cat_cats[1]: clue1}
 
@@ -197,14 +212,13 @@ def reset_results():
 
     if ' cat ' in state[KEY_PROMPT]:
         state[KEY_FINAL_PROMPT] = state[KEY_PROMPT].lower().replace(' cat ', ' dog ')
-
-    if ' dog ' in state[KEY_PROMPT]:
+    elif ' dog ' in state[KEY_PROMPT]:
         state[KEY_FINAL_PROMPT] = state[KEY_PROMPT].lower().replace(' dog ', ' cat ')
+    else:
+        state[KEY_FINAL_PROMPT] = state[KEY_PROMPT].lower()
 
 
 st.header("Part 1: Simulating a Generative AI Workflow")
-
-# st.text(f'Session:  {state[KEY_SESSION_ID]}')
 
 text_input_container = st.empty()
 text_input_container.text_input("First, enter a name. This is just for fun so you can find your data later!", key=KEY_USER_ID)
@@ -215,23 +229,21 @@ if state[KEY_USER_ID] == EMPTY:
 text_input_container.empty()
 st.text(f"User:     {state[KEY_USER_ID].lower()}")
 
-st.text(f'Prompt #: {state[KEY_PROMPT_NUMBER]} of {TOT_PROMPTS_TO_DO}')
+st.text(f'Day #: {state[KEY_PROMPT_NUMBER] + 1} of {TOT_PROMPTS_TO_DO}')
 st.progress(state[KEY_PROMPT_NUMBER]/TOT_PROMPTS_TO_DO)
 
 
 # st.title("")
-st.subheader("Story Features")
 
 if state[KEY_CATEGORY] == EMPTY:
     state[KEY_CATEGORY], state[KEY_FEATURES] = generate_clues()
 
-st.markdown(f'You work for a newspaper and your job is to write a prompt to generate a thumbnail image for a'
-            f'newspaper story using the for the randomly selected section and topics below.')
+st.subheader("The Task")
 
-# ex = '\n\n'.join(['>'+example for example in categories_examples[state[KEY_CATEGORY]]])
-# st.markdown(ex)
+st.markdown(f'You work for a newspaper and your job is to prompt an image generator to produce a thumbnail image for a '
+            f'story using the (randomly selected) section and topics below.')
 
-st.header('')
+st.subheader("Story Features")
 
 c1, c2 = st.columns([1, 2])
 
@@ -272,8 +284,8 @@ with col2:
 
     st.radio('Fidelity – did the model capture everything you asked for?', key=KEY_FEEDBACK_FIDELITY, options=['No', 'Yes'])
 
-    st.radio('Did the model include any visual distortions? (e.g. AI crazy-fingers)', key=KEY_FEEDBACK_DISTORTION,
-                        options=['No', 'Yes'])
+    # st.radio('Did the model include any visual distortions? (e.g. AI crazy-fingers)', key=KEY_FEEDBACK_DISTORTION,
+    #                     options=['No', 'Yes'])
 
     st.radio('Did the model make any assumptions that could indicate bias? (e.g. race, gender, age)',
              key=KEY_FEEDBACK_BIAS, options=['No', 'Yes'])

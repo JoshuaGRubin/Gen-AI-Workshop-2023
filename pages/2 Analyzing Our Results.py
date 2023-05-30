@@ -98,7 +98,7 @@ with c2:
     color_by_options = ['Newspaper Section',
                         '[Feedback] Fidelity',
                         '[Feedback] Bias',
-                        '[Feedback] Distortion',
+                        # '[Feedback] Distortion',
                         '[Feedback] Quality']
 
     color_by = st.selectbox('Color UMAP/semantic plot by:', color_by_options)
@@ -106,6 +106,7 @@ with c2:
 df = df[df['session_id'] == session]
 
 if len(df) == 0:
+    st.write(f'{len(df)} records returned')
     st.stop()
 
 df = add_umap(df)

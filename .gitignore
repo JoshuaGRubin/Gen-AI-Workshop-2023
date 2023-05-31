@@ -1,3 +1,5 @@
 .streamlit
 .idea
 .ipynb_checkpoints
+gen_workshop_dataframe.csv
+__pycache__/legacy_session_state.cpython-38.pyc

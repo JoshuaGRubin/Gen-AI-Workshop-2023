@@ -225,6 +225,10 @@ if state[KEY_USER_ID] == EMPTY:
 text_input_container.empty()
 st.text(f"User:     {state[KEY_USER_ID].lower()}")
 
+if state[KEY_PROMPT_NUMBER] >= TOT_PROMPTS_TO_DO:
+    st.subheader(f"Awesome– you've generated {TOT_PROMPTS_TO_DO} prompts!  We'll start the next step shortly.")
+    st.stop()
+
 st.text(f'Day #: {state[KEY_PROMPT_NUMBER] + 1} of {TOT_PROMPTS_TO_DO}')
 st.progress(state[KEY_PROMPT_NUMBER]/TOT_PROMPTS_TO_DO)
 

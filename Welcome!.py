@@ -16,6 +16,7 @@ st.markdown('- [Slides](https://docs.google.com/presentation/d/1iu5KIHMYzYtdiZOJ
             '- Blog series on monitoring drift in vector distributions ([1. technique](https://www.fiddler.ai/blog/monitoring-natural-language-processing-and-computer-vision-models-part-1), [2. Computer Vision](https://www.fiddler.ai/blog/monitoring-natural-language-processing-and-computer-vision-models-part-2), [3. Natural Language](https://www.fiddler.ai/blog/monitoring-natural-language-processing-and-computer-vision-models-part-3))')
 
 st.subheader('Overview of Activity')
+st.image('the_activity.png')
 
 st.subheader('Interpreting Feedback Semantically')
 st.image('schematic_feedback.png')

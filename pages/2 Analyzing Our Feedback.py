@@ -214,7 +214,7 @@ if len(selected_points):
 
             feedback_types = ['[Feedback] Fidelity',
                               '[Feedback] Bias',
-                              '[Feedback] Distortion',
+                              # '[Feedback] Distortion',
                               '[Feedback] Quality',
                               '[Feedback] Notes']
 

@@ -73,7 +73,9 @@ df = df[(df['session_id'] == SESSION_ID)]
 
 st.header('Part 3: Measuring Drift in Unstructured Data')
 
-st.text(f'{len(df)} records returned')
+NUM_BINS =  st.select_slider('How many bins should I use for semantic clustering?', value=3, options=[3, 4, 5])
+
+st.text(f'{len(df)} records returned, clustering with {NUM_BINS} bins.')
 
 if len(df) == 0:
     st.stop()
@@ -82,7 +84,6 @@ df = add_umap(df)
 
 embs_by_group = [df[df['prompt_number']//DAYS_IN_GROUP == i][['UMAP_0', 'UMAP_1']].values for i in range(3)]
 
-NUM_BINS = 4
 
 X = embs_by_group[0]
 kmeans = KMeans(n_clusters=NUM_BINS, random_state=42).fit(X)
@@ -90,9 +91,6 @@ kmeans = KMeans(n_clusters=NUM_BINS, random_state=42).fit(X)
 counts = [np.bincount(kmeans.predict(embs_by_group[i]), minlength=NUM_BINS) for i in range(3)]
 
 prompt_labels = ['Prompts 1-4', '5-8 (modified)', '9-12']
-
-
-
 
 st.write('**A distributional shift was introduced to your newspaper topics for prompts five through eight.**  '
          'This is probably visible in the semantic/UMAP plots of the embeddings we calculated from your prompts.')
@@ -104,7 +102,7 @@ st.write('The semantic plots below are broken up into three groups of four promp
 st.write('Running a clustering algorithm (colors below) makes it possible to track semantic shift with respect to the initial '
          'time interval.')
 
-color_by_cluster = ['k', 'r', 'g', 'b']
+color_by_cluster = ['k', 'r', 'g', 'b', 'm']
 
 fig, ax = plt.subplots(1, 3, sharex=True)
 for cluster in range(NUM_BINS):
@@ -142,6 +140,7 @@ for i, c in enumerate(counts):
     plt.bar(np.arange(NUM_BINS)+(i-1)*WIDTH, height=c/sum(c), width=WIDTH, label=prompt_labels[i]) #, yerr=[[0.01, 0.02, 0.01, 0.02], [0.01, 0.02, 0.01, 0.02]])
 
 plt.xlabel('Cluster', fontsize=8)
+plt.xticks(list(range(NUM_BINS)))
 plt.title('Histogram of cluster assignments across prompts groups', fontsize=8)
 plt.legend(title='Prompts')
 st.pyplot(fig)

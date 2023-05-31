@@ -64,17 +64,9 @@ def submit_data():
 
     data_dict[KEY_USER_ID] = data_dict[KEY_USER_ID].lower()
 
-    # data_dict[KEY_PROMPT] =
-    #
-    # print()
-
     s3_bucket.upload_fileobj(io.BytesIO(data_dict.pop(KEY_IMAGE)), data_dict[KEY_UUID] + '.png', )
-    # print('image written to s3')
 
     ddb_table.put_item(Item=data_dict)
-    # print('ddb record written')
-    # print(data_dict)
-
 
     state[KEY_PROMPT_NUMBER] += 1
 
@@ -117,7 +109,7 @@ categories_details_1 = {'politics': politics_details,
                         'cartoon': funny_details}
 
 
-politics_details_2 = {'Who': ['the president', 'the United Nations', 'NATO', 'The EU'],
+politics_details_2 = {'Who': ['the president', 'the United Nations', 'NATO', 'the European Union'],
                       'What': ['an important election', 'a scandal', 'a natural disaster',
                                'Artificial General Intelligence', 'an international conflict']}
 
@@ -214,10 +206,10 @@ def reset_results():
     state[KEY_EMBEDDING] = EMPTY
     state[KEY_TIME] = EMPTY
 
-    if ' cat ' in state[KEY_PROMPT]:
-        state[KEY_FINAL_PROMPT] = state[KEY_PROMPT].lower().replace(' cat ', ' dog ')
-    elif ' dog ' in state[KEY_PROMPT]:
-        state[KEY_FINAL_PROMPT] = state[KEY_PROMPT].lower().replace(' dog ', ' cat ')
+    if 'cat' in state[KEY_PROMPT]:
+        state[KEY_FINAL_PROMPT] = state[KEY_PROMPT].lower().replace('cat', 'dog')
+    elif 'dog' in state[KEY_PROMPT]:
+        state[KEY_FINAL_PROMPT] = state[KEY_PROMPT].lower().replace('dog', 'cat')
     else:
         state[KEY_FINAL_PROMPT] = state[KEY_PROMPT].lower()
 
@@ -284,9 +276,9 @@ with col1:
     st.image(state[KEY_IMAGE])
 
 with col2:
-    st.select_slider('How happy are you with the result? (5 is "totally")', key=KEY_FEEDBACK_QUALITY, options=[1, 2, 3, 4, 5])
+    st.select_slider('How happy are you with the result? (5 is "totally")', key=KEY_FEEDBACK_QUALITY, value=5, options=[1, 2, 3, 4, 5])
 
-    st.radio('Fidelity – did the model capture everything you asked for?', key=KEY_FEEDBACK_FIDELITY, options=['No', 'Yes'])
+    st.radio('Fidelity – did the model capture what you asked for?', key=KEY_FEEDBACK_FIDELITY, options=['Yes', 'No'])
 
     # st.radio('Did the model include any visual distortions? (e.g. AI crazy-fingers)', key=KEY_FEEDBACK_DISTORTION,
     #                     options=['No', 'Yes'])

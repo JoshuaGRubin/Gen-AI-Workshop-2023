@@ -7,3 +7,6 @@ matplotlib
 openai
 boto3
 umap-learn
+scikit-learn
+matplotlib
+scipy

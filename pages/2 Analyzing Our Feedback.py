@@ -69,7 +69,7 @@ def get_db_data():
 def run_umap(the_df):
     embs = np.asarray(the_df['embedding'].to_list())
 
-    reducer = umap.UMAP(n_components=2, n_neighbors=3, random_state=42)
+    reducer = umap.UMAP(n_components=2, n_neighbors=4, random_state=42)
 
     umap_embs = reducer.fit_transform(embs[:, :128])
 
@@ -109,7 +109,7 @@ with c2:
 df = df[df['session_id'] == session]
 
 if len(df) == 0:
-    st.write(f'{len(df)} records returned')
+    st.text(f'{len(df)} records returned')
     st.stop()
 
 df = add_umap(df)
@@ -122,7 +122,7 @@ if user != 'All':
 if session != 'All':
     d = d[(d['session_id'] == session)]
 
-st.write(f'{len(d)} records returned')
+st.text(f'{len(d)} records returned')
 
 if len(d) == 0:
     st.stop()

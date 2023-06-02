@@ -297,4 +297,6 @@ with col2:
     # # with col3:
     # st.button("Reset :recycle:", on_click=next_prompt)
     # with col4:
-    st.button('Submit :rocket:', on_click=submit_data)
+    st.button('Submit :rocket:', on_click=submit_data, disabled=True)
+
+    st.write("We're not logging new results right now.  Feel free to browse the other sections to play with data from our last session!")

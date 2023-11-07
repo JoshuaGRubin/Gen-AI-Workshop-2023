@@ -4,7 +4,7 @@ streamlit
 streamlit-extras
 streamlit-plotly-events
 matplotlib
-openai
+openai==0.27.7
 boto3
 umap-learn
 scikit-learn
